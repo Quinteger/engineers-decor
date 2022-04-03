@@ -1,7 +1,7 @@
 {
  "homepage": "https://www.curseforge.com/minecraft/mc-mods/engineers-decor/",
  "1.16.5": {
-  "1.1.17": "[R] Maintenance release.\n[M] Update tracker URL adapted.",
+  "1.1.17": "[M] Update tracker URL adapted.\n[A] French translation added (PR#204, dracnis).",
   "1.1.16": "[R] Release build v1.1.16.\n[U] Forge/gradle update.\n[F] Fixed rendering issue.",
   "1.1.16-b2": "[F] Block Placer placement context issue fix.",
   "1.1.16-b1": "[F] RB mapping to fix cross-compat problems (#193, #192).",
