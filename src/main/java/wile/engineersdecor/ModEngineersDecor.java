@@ -1,18 +1,22 @@
 package wile.engineersdecor;
 
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.config.ModConfigEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.config.ModConfigEvent;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.client.event.RenderGuiEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import org.slf4j.Logger;
 import wile.engineersdecor.blocks.EdLadderBlock;
 import wile.engineersdecor.libmc.Auxiliaries;
@@ -20,8 +24,10 @@ import wile.engineersdecor.libmc.OptionalRecipeCondition;
 import wile.engineersdecor.libmc.Overlay;
 import wile.engineersdecor.libmc.Registries;
 
+import static wile.engineersdecor.ModEngineersDecor.MODID;
 
-@Mod("engineersdecor")
+
+@Mod(MODID)
 public class ModEngineersDecor
 {
   public static final String MODID = "engineersdecor";
@@ -40,7 +46,7 @@ public class ModEngineersDecor
     ModLoadingContext.get().registerConfig(net.minecraftforge.fml.config.ModConfig.Type.COMMON, ModConfig.COMMON_CONFIG_SPEC);
     FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onSetup);
     FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onClientSetup);
-    MinecraftForge.EVENT_BUS.register(this);
+    NeoForge.EVENT_BUS.register(this);
   }
 
   private void onSetup(final FMLCommonSetupEvent event)
@@ -58,12 +64,13 @@ public class ModEngineersDecor
     ModContent.processContentClientSide(event);
   }
 
-  @Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.MOD)
+  @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
   public static class ForgeEvents
   {
     @SubscribeEvent
-    public static void onConfigLoad(final ModConfigEvent.Loading event)
-    { ModConfig.apply(); }
+    public static void onConfigLoad(final ModConfigEvent.Loading event) {
+      ModConfig.apply();
+    }
 
     @SubscribeEvent
     public static void onConfigReload(final ModConfigEvent.Reloading event)
@@ -78,25 +85,28 @@ public class ModEngineersDecor
   }
 
   @SubscribeEvent
-  public void onPlayerEvent(final LivingEvent.LivingTickEvent event)
+  public void onPlayerEvent(final PlayerTickEvent event)
   {
-    if(!(event.getEntity() instanceof final Player player)) return;
-    if(player.onClimbable()) EdLadderBlock.onPlayerUpdateEvent(player);
+      Player player = event.getEntity();
+      if (player.onClimbable()) {
+          EdLadderBlock.onPlayerUpdateEvent(player);
+      }
   }
 
   @OnlyIn(Dist.CLIENT)
-  @Mod.EventBusSubscriber(Dist.CLIENT)
+  @EventBusSubscriber(Dist.CLIENT)
   public static class ForgeClientEvents
   {
     @SubscribeEvent
-    public static void onRenderGui(net.minecraftforge.client.event.RenderGuiOverlayEvent.Post event)
-    { Overlay.TextOverlayGui.INSTANCE.onRenderGui(event.getPoseStack()); }
+    public static void onRenderGui(RenderGuiEvent.Post event) {
+      Overlay.TextOverlayGui.INSTANCE.onRenderGui(event.getGuiGraphics().pose());
+    }
 
     @SubscribeEvent
     @OnlyIn(Dist.CLIENT)
-    public static void onRenderWorldOverlay(net.minecraftforge.client.event.RenderLevelStageEvent event)
+    public static void onRenderWorldOverlay(RenderLevelStageEvent event)
     {
-      if(event.getStage() == net.minecraftforge.client.event.RenderLevelStageEvent.Stage.AFTER_WEATHER) {
+      if(event.getStage() == RenderLevelStageEvent.Stage.AFTER_WEATHER) {
         Overlay.TextOverlayGui.INSTANCE.onRenderWorldOverlay(event.getPoseStack(), event.getPartialTick());
       }
     }
